@@ -7,7 +7,8 @@
            #:*master-structures-list*
            #:total-entries
            #:total-structures
-           #:refresh-list))
+           #:refresh-list
+           #:reset-list))
 
 (in-package :acronyms)
 
