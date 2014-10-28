@@ -1,4 +1,4 @@
-(defpackage info.isoraqathedh.acronyms.asdf
+(defpackage :info.isoraqathedh.acronyms.asdf
   (:use #:cl #:asdf))
 (in-package :info.isoraqathedh.acronyms.asdf)
 
