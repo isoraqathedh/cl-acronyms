@@ -174,11 +174,13 @@ returning nil if attempts run out (usually because there is no such combination)
               finally (return (append final-list
                                       (%get-POS-template target)))))))
 
-(defun expand (acronym)
-  "Expands an acronym."
+(defun expand (acronym &optional (times 1 times-supplied-p))
+  "Expands an acronym. If 'times' is provided, repeats expansion that many times and collects results into a list."
   ;; Remove all non-letter characters.
   (setf acronym (delete-if-not #'(lambda (p) (find p "ABCDEFGHIJKLMNOPQRSTUVWXYZ" :test #'char-equal)) acronym))
-  (build-backronym (get-POS-template acronym) acronym))
+  (if times-supplied-p
+      (loop repeat times collect (build-backronym (get-POS-template acronym) acronym))
+      (build-backronym (get-POS-template acronym) acronym)))
   
 ;;; Autoload the list
 (refresh-list)
