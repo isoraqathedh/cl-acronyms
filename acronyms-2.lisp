@@ -1,4 +1,4 @@
-(defpackage info.isoraqathedh.acronyms
+(defpackage :info.isoraqathedh.acronyms
   (:use :cl)
   (:nicknames #:acronyms)
   (:export #:expand
