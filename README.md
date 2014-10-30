@@ -47,10 +47,10 @@ cl-acronyms remains a work in progress, though it works out of the box as it is.
 Below are some of the things that are desired for future versions,
 in no particular order:
 
-- A more intelligent word structure system
-- A list of sentence structures in the ballpark in scope as mobyposi.i
--- A slightly smaller mobyposi.i that doesn't use quite so many archaic words
-- Greater control over how phrases are constructed:
--- Direct control over capitalization
--- Direct control over spacing
-- Code cleanup.
+* A more intelligent word structure system
+* A list of sentence structures in the ballpark in scope as mobyposi.i
+  * A slightly smaller mobyposi.i that doesn't use quite so many archaic words
+* Greater control over how phrases are constructed:
+  * Direct control over capitalization
+* Direct control over spacing
+* Code cleanup.
