@@ -8,5 +8,4 @@
   :licence "MIT"
   :description "A program that expands an acronym based on grammatical rules."
   :serial t
-  :components ((:static-file "mobyposi.i")
-               (:file "acronyms-2")))
+  :components ((:file "acronyms")))
