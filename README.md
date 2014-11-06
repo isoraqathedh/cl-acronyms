@@ -9,11 +9,16 @@ After loading the system,
 simply use `(acronyms:expand your-acronym-here)`
 to generate an phrase
 that has the first letter of each "main word" be `your-acronym-here`.
+Optionally, providing a numerical argument
+like `(acronyms:expand your-acronym-here iteration)`
+will expand that acronym `iteration` times,
+and collect all results into a list.
 
 You can reload the list of words by evaluating `(refresh-list)`.
 This will load a file named "mobiposi.i"
 in the same directory as the code into the program.
-You can find out how many entries the dictionary has through `(total-entries)` and `(total-structures)`.
+You can find out how many entries the dictionary has
+through `(total-entries)` and `(total-structures)`.
 If for any reason you wish to delete the list without reloading a new one,
 use `(reset-list)`.
 
