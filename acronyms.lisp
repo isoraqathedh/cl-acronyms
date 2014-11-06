@@ -140,22 +140,6 @@ returning nil if attempts run out (usually because there is no such combination)
                    when (char-equal letter (aref i 0))
                      return (format nil "~@(~a~)" i))))))
 
-(defun build-backronym (part-of-speech-specifier acronym)
-  "Creates an acronym using a combination of a part-of-speech specifier and an input abbreviation."
-  ;; As a bit of a syntactic sugar, allow POS letters used in mobiposi.i to be used as POS-specifiers.
-  (when (stringp part-of-speech-specifier)
-    (setf part-of-speech-specifier (map 'list #'decode-POS-letter part-of-speech-specifier)))
-  (loop for part-of-speech in part-of-speech-specifier
-        with acronym = acronym
-        with pointer = 0
-        if (stringp part-of-speech)
-          collect part-of-speech into built-phrase
-        else
-          collect (random-word part-of-speech (aref acronym pointer)) into built-phrase
-          and do (incf pointer)
-        while (< pointer (length acronym))
-        finally (return (format nil "~{~a~^ ~}" built-phrase))))
-
 (defun get-POS-template (acronym)
   "Returns an appropriate part-of-speech template for a given acronym, ready for use in build-backronym."
   ;; MAYBE: Do common (and irregular) substitutions here, like 2 → to, 4 → for
@@ -182,8 +166,17 @@ returning nil if attempts run out (usually because there is no such combination)
   ;; Remove all non-letter characters.
   (setf acronym (delete-if-not #'(lambda (p) (find p "ABCDEFGHIJKLMNOPQRSTUVWXYZ" :test #'char-equal)) acronym))
   (if times-supplied-p
-      (loop repeat times collect (build-backronym (get-POS-template acronym) acronym))
-      (build-backronym (get-POS-template acronym) acronym)))
+      (loop repeat times collect (expand acronym))
+      (loop for part-of-speech in (get-POS-template acronym)
+            with acronym = acronym
+            with pointer = 0
+            if (stringp part-of-speech)
+              collect part-of-speech into built-phrase
+            else
+              collect (random-word part-of-speech (aref acronym pointer)) into built-phrase
+              and do (incf pointer)
+            while (< pointer (length acronym))
+            finally (return (format nil "~{~a~^ ~}" built-phrase)))))
   
 ;;; Autoload the list
 (refresh-list)
