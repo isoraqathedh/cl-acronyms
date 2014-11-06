@@ -91,9 +91,8 @@ Skips any entries that have spaces."
   "Reads the structures from structures.lisp."
   (with-open-file (structures-file *structures-file-location* :external-format :utf-8)
     (let ((*read-eval* nil)) ;; Prevents #. from working; there's no need for it anyway.
-      (format *report-stream* "~&Reading structures from file ~s: " *structures-file-location*)
-      (read structures-file)
-      (format *report-stream* "Done."))))
+      (format *report-stream* "~&Reading structures from file ~s." *structures-file-location*)
+      (read structures-file))))
 
 (defparameter *master-structures-list* (%read-structures)
   "The vector that holds all structures.")
