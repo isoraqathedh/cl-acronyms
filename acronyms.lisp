@@ -146,16 +146,16 @@ returning nil if attempts run out (usually because there is no such combination)
   ;; As a bit of a syntactic sugar, allow POS letters used in mobiposi.i to be used as POS-specifiers.
   (when (stringp part-of-speech-specifier)
     (setf part-of-speech-specifier (map 'list #'decode-POS-letter part-of-speech-specifier)))
-  (format nil "~{~a~^ ~}"
-          (loop for part-of-speech in part-of-speech-specifier
-                with acronym = acronym
-                with pointer = 0
-                if (stringp part-of-speech)
-                  collect part-of-speech
-                else
-                  collect (random-word part-of-speech (aref acronym pointer))
-                  and do (incf pointer)
-                while (< pointer (length acronym)))))
+  (loop for part-of-speech in part-of-speech-specifier
+        with acronym = acronym
+        with pointer = 0
+        if (stringp part-of-speech)
+          collect part-of-speech into built-phrase
+        else
+          collect (random-word part-of-speech (aref acronym pointer)) into built-phrase
+          and do (incf pointer)
+        while (< pointer (length acronym))
+        finally (return (format nil "~{~a~^ ~}" built-phrase))))
 
 (defun get-POS-template (acronym)
   "Returns an appropriate part-of-speech template for a given acronym, ready for use in build-backronym."
