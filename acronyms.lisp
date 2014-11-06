@@ -20,6 +20,9 @@
 (defparameter *structures-file-location* (asdf:system-relative-pathname 'acronyms "structures" :type "lisp")
   "Location of which the list of structures is located.")
 
+(defparameter *report-stream* *standard-output*
+  "Certain functions will print a progress bar in reading files. This is where it is printed to.")
+
 ;;; Word list and associated functions maintaining it
 
 (defun %reset-list ()
@@ -87,8 +90,10 @@ Skips any entries that have spaces."
 (defun %read-structures ()
   "Reads the structures from structures.lisp."
   (with-open-file (structures-file *structures-file-location* :external-format :utf-8)
-    (let ((*read-eval* nil))
-      (read structures-file))))
+    (let ((*read-eval* nil)) ;; Prevents #. from working; there's no need for it anyway.
+      (format *report-stream* "~&Reading structures from file ~s: " *structures-file-location*)
+      (read structures-file)
+      (format *report-stream* "Done."))))
 
 (defparameter *master-structures-list* (%read-structures)
   "The vector that holds all structures.")
