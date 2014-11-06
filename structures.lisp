@@ -19,4 +19,5 @@
   #(;; 5 letters
     (:adverbs :transitive-verbs :adjectives :adjectives :plurals)
     (:adjectives :plurals :transitive-verbs :adjectives :plurals)
-    (:adjectives :adjectives :plurals :adverbs :intransitive-verbs)))
+    (:adjectives :adjectives :plurals :adverbs :intransitive-verbs)
+    (:interjections "!" :adjectives :nouns :transitive-verbs :nouns)))
