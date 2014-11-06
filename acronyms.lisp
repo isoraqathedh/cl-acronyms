@@ -12,11 +12,15 @@
 
 (in-package :acronyms)
 
+;;; Global variables
+
 (defparameter *word-list-file-location* (asdf:system-relative-pathname 'acronyms "mobyposi" :type "i")
   "Location of which the list of words with part of speech modifiers are located.")
 
 (defparameter *structures-file-location* (asdf:system-relative-pathname 'acronyms "structures" :type "lisp")
   "Location of which the list of structures is located.")
+
+;;; Word list and associated functions maintaining it
 
 (defun %reset-list ()
   "Blank list for *master-word-list*"
@@ -53,6 +57,33 @@
   (and (setf *master-word-list* (%reset-list))
        t))
 
+(defun refresh-list ()
+  "Reloads the list from mobiposi.i, replacing all entries orginally in *master-word-list*. 
+Returns the number of items placed into the word bank.
+Skips any entries that have spaces."
+  (reset-list) ; clear the original list.
+  (with-open-file (stream *word-list-file-location* :external-format :utf-8)
+    (loop initially (format *report-stream* "~&Reading wordlist from file ~s: " *word-list-file-location*)
+          with read = 0
+          for j from 0
+          for text              = (read-line stream nil) while text
+          for word              = (subseq text 0 (position #\× text))
+          for codes             = (subseq text (1+ (position #\× text)))
+          for first-letter-then = #\Newline then first-letter-now ; #\Newline is guaranteed to never be part of a word.
+          for first-letter-now  = (aref word 0)
+          when (char-not-equal first-letter-then first-letter-now)
+            do (princ (char-upcase first-letter-now))
+          when (not (find #\Space word)) ; Forbid multi-word phrases to enter.
+            do (map 'list
+                    #'(lambda (p) (vector-push-extend word (gethash (decode-POS-letter p) *master-word-list*)))
+                    codes)
+               (incf read)
+          finally
+             (format *report-stream* "~%Read ~:d entries, out of ~:d total in file." read j)
+             (return read))))
+
+;;; Structures list and functions maintaining it
+
 (defun %read-structures ()
   "Reads the structures from structures.lisp."
   (with-open-file (structures-file *structures-file-location* :external-format :utf-8)
@@ -69,6 +100,8 @@
 (defun total-structures ()
   "Returns the total number of structures."
   (reduce #'+ *master-structures-list* :key #'length))
+
+;;; Functions relating to building an acronym
 
 (defun decode-POS-letter (letter)
   "Turns the codes used by mobiposi.i into keywords corresponding to keys in the hash table."
@@ -88,31 +121,6 @@
     (#\D :definite-articles )
     (#\I :indef-articles    )
     (#\o :nominatives       )))
-
-(defun refresh-list ()
-  "Reloads the list from mobiposi.i, replacing all entries orginally in *master-word-list*. 
-Returns the number of items placed into the word bank.
-Skips any entries that have spaces."
-  (reset-list) ; clear the original list.
-  (with-open-file (stream *word-list-file-location* :external-format :utf-8)
-    (loop initially (format t "~&Reading wordlist from file ~s: " *word-list-file-location*)
-          with read = 0
-          for j from 0
-          for text              = (read-line stream nil) while text
-          for word              = (subseq text 0 (position #\× text))
-          for codes             = (subseq text (1+ (position #\× text)))
-          for first-letter-then = #\Newline then first-letter-now ; #\Newline is guaranteed to never be part of a word.
-          for first-letter-now  = (aref word 0)
-          when (char-not-equal first-letter-then first-letter-now)
-            do (princ (char-upcase first-letter-now))
-          when (not (find #\Space word)) ; Forbid multi-word phrases to enter.
-            do (map 'list
-                    #'(lambda (p) (vector-push-extend word (gethash (decode-POS-letter p) *master-word-list*)))
-                    codes)
-               (incf read)
-          finally
-             (format t "~%Read ~:d entries, out of ~:d total in file." read j)
-             (return read))))
 
 (defun random-word (part-of-speech &optional letter)
   "Grabs a random word starting with the given part of speech starting with letter, if given.
