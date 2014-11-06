@@ -39,9 +39,9 @@ When loading the list,
 `(refresh-list)` will automatically skip any entries that have spaces in them,
 as those are unsuitable targets for an expansion of the acronym.
 
-The file is also not optimized for maximum hilarity,
-which was one of the goals of this acronym expander.
-Interested parties can provide a better, funnier list
+The file contains some unusual, uncommon or obsolete words
+that may confuse a reader that might use it just for laughs.
+Interested parties can provide a less confusing list
 with a similar size.
 
 cl-acronyms does not otherwise depend on any other library.
