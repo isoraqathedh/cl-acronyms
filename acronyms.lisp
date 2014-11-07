@@ -164,19 +164,24 @@ returning nil if attempts run out (usually because there is no such combination)
 (defun expand (acronym &optional (times 1 times-supplied-p))
   "Expands an acronym. If 'times' is provided, repeats expansion that many times and collects results into a list."
   ;; Remove all non-letter characters.
-  (setf acronym (delete-if-not #'(lambda (p) (find p "ABCDEFGHIJKLMNOPQRSTUVWXYZ" :test #'char-equal)) acronym))
-  (if times-supplied-p
-      (loop repeat times collect (expand acronym))
-      (loop for part-of-speech in (get-POS-template acronym)
-            with acronym = acronym
-            with pointer = 0
-            if (stringp part-of-speech)
-              collect part-of-speech into built-phrase
-            else
-              collect (random-word part-of-speech (aref acronym pointer)) into built-phrase
-              and do (incf pointer)
-            while (< pointer (length acronym))
-            finally (return (format nil "~{~a~^ ~}" built-phrase)))))
+  (flet ((letterp (thing)
+           (find thing "ABCDEFGHIJKLMNOPQRSTUVWXYZ" :test #'char-equal)))
+    (setf acronym (delete-if-not #'letterp acronym))
+    (if times-supplied-p
+        (loop repeat times collect (expand acronym))
+        (with-output-to-string (out-string)
+          (loop for part-of-speech in (get-POS-template acronym)
+                with pointer = 0
+                for firstp = t then nil
+                for letter = (aref acronym pointer)
+                if (stringp part-of-speech)
+                  do (format out-string "~:[ ~;~]~a"
+                             (or firstp (not (letterp (aref part-of-speech 0))))
+                             part-of-speech)
+                else
+                  do (format out-string "~:[ ~;~]~a" firstp (random-word part-of-speech letter))
+                     (incf pointer)
+                while (< pointer (length acronym)))))))
   
 ;;; Autoload the list
 (refresh-list)
