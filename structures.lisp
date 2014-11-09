@@ -12,8 +12,8 @@
     (:adjectives :adjectives :plurals)
     (:plurals :verbs :plurals))
   #(;; 4 letters
-    (:adjectives :adjectives "and" :adjectives :nouns)
-    (:adjectives :adjectives "and" :adjectives :plurals)
+    (:adjectives "," :adjectives "and" :adjectives :nouns)
+    (:adjectives "," :adjectives "and" :adjectives :plurals)
     (:adjectives :plurals "that" :transitive-verbs :plurals)
     (:nouns "that" :adverbs :transitive-verbs :plurals))
   #(;; 5 letters
