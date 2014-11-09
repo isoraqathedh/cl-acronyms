@@ -134,7 +134,7 @@ If a letter is supplied, will make up to 12800 attempts to find a word that begi
 returning nil if attempts run out (usually because there is no such combination)."
   (let ((pos-hash-table (gethash part-of-speech *master-word-list*)))
     (cond ((stringp part-of-speech) part-of-speech)
-          ((or (null letter) (find letter '(:any t))) (aref pos-hash-table (random (length pos-hash-table))))
+          ((member letter '(:any nil t)) (aref pos-hash-table (random (length pos-hash-table))))
           (t (loop repeat 12800         ; failsafe
                    for i = (aref pos-hash-table (random (length pos-hash-table)))
                    when (char-equal letter (aref i 0))
@@ -165,7 +165,7 @@ returning nil if attempts run out (usually because there is no such combination)
   "Expands an acronym. If 'times' is provided, repeats expansion that many times and collects results into a list."
   ;; Remove all non-letter characters.
   (flet ((letterp (thing)
-           (find thing "ABCDEFGHIJKLMNOPQRSTUVWXYZ" :test #'char-equal)))
+           (or (char<= #\a thing #\z) (char<= #\A thing #\Z))))
     (setf acronym (delete-if-not #'letterp acronym))
     (if times-supplied-p
         (loop repeat times collect (expand acronym))
