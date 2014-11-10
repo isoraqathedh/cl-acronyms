@@ -163,9 +163,9 @@ returning nil if attempts run out (usually because there is no such combination)
 
 (defun expand (acronym &optional (times 1 times-supplied-p))
   "Expands an acronym. If 'times' is provided, repeats expansion that many times and collects results into a list."
-  ;; Remove all non-letter characters.
   (flet ((letterp (thing)
            (or (char<= #\a thing #\z) (char<= #\A thing #\Z))))
+    ;; Remove all non-letter characters.
     (setf acronym (delete-if-not #'letterp acronym))
     (if times-supplied-p
         (loop repeat times collect (expand acronym))
