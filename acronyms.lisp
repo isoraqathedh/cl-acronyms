@@ -8,6 +8,7 @@
            #:total-entries
            #:total-structures
            #:refresh-list
+           #:refresh-structures
            #:reset-list))
 
 (in-package :acronyms)
