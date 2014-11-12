@@ -1,4 +1,4 @@
-(defpackage :info.isoraqathedh.acronyms
+(defpackage :info.isoraqathedh.cl-acronyms
   (:use :cl)
   (:nicknames #:acronyms)
   (:export #:expand
@@ -15,10 +15,10 @@
 
 ;;; Global variables
 
-(defparameter *word-list-file-location* (asdf:system-relative-pathname 'acronyms "mobyposi" :type "i")
+(defparameter *word-list-file-location* (asdf:system-relative-pathname 'cl-acronyms "mobyposi" :type "i")
   "Location of which the list of words with part of speech modifiers are located.")
 
-(defparameter *structures-file-location* (asdf:system-relative-pathname 'acronyms "structures" :type "lisp")
+(defparameter *structures-file-location* (asdf:system-relative-pathname 'cl-acronyms "structures" :type "lisp")
   "Location of which the list of structures is located.")
 
 (defparameter *report-stream* *standard-output*
