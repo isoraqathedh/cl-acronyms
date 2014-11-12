@@ -1,6 +1,6 @@
 (defpackage :info.isoraqathedh.cl-acronyms
   (:use :cl)
-  (:nicknames #:acronyms)
+  (:nicknames #:cl-acronyms)
   (:export #:expand
            #:*word-list-file-location*
            #:*master-word-list*
@@ -11,7 +11,7 @@
            #:refresh-structures
            #:reset-list))
 
-(in-package :acronyms)
+(in-package :cl-acronyms)
 
 ;;; Global variables
 
