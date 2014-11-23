@@ -58,4 +58,3 @@ in no particular order:
 * Greater control over how phrases are constructed:
   * Direct control over capitalization
 * Direct control over spacing
-* Code cleanup.
