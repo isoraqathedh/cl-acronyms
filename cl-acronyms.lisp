@@ -78,7 +78,7 @@ Skips any entries that have spaces."
           when (char-not-equal first-letter-then first-letter-now)
             do (princ (char-upcase first-letter-now))
           when (not (find #\Space word)) ; Forbid multi-word phrases to enter.
-            do (map 'list
+            do (map nil
                     #'(lambda (p) (vector-push-extend word (gethash (decode-POS-letter p) *master-word-list*)))
                     codes)
                (incf read)
