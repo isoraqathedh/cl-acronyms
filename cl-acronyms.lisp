@@ -48,8 +48,23 @@
         do (setf (gethash part-of-speech ht) (make-array 1500 :adjustable t :fill-pointer 0))
         finally (return ht)))
 
+(defun POS-associate-number (letter)
+  "Turns the codes used by mobiposi.i into keywords corresponding to keys in the hash table."
+  (loop for i in '(#\N #\p #\h #\V #\t #\i #\A #\v #\C #\P #\! #\r #\D #\I #\o)
+        for j from 0
+        when (char= letter i)
+          return j
+        finally (error "Not a recognized letter: ~@C" letter)))
+
+(defun letter-associate-number (letter)
+  "Turns A = 0, B = 1, ..., Z = 25"
+  (- (or (digit-char-p letter 36) (error "Not a recognized letter: ~@C" letter)) 10))
+
 (defparameter *master-word-list* (%reset-list)
   "The word list holding all words and their parts of speech.")
+
+(defparameter *word-count-array* (make-array '(15 26) :element-type 'fixnum)
+  "An array counting the number of words satisfying a given first letter and a given part of speech.")
 
 (defun total-entries ()
   "Returns the total length the dictionary."
@@ -58,7 +73,8 @@
 
 (defun reset-list ()
   "Delete all entries from *master-word-list*. Returns t on success."
-  (and (setf *master-word-list* (%reset-list))
+  (and (setf *master-word-list* (%reset-list)
+             *word-count-array* (make-array '(15 26) :element-type 'fixnum))
        t))
 
 (defun refresh-list ()
@@ -77,9 +93,13 @@ Skips any entries that have spaces."
           for first-letter-now  = (aref word 0)
           when (char-not-equal first-letter-then first-letter-now)
             do (princ (char-upcase first-letter-now))
-          when (not (find #\Space word)) ; Forbid multi-word phrases to enter.
+          when (and (not (find #\Space word)) ; Forbid multi-word phrases to enter.
+                    (or (char<= #\A (char word 0) #\Z)  ; Must start with an uppercase…
+                        (char<= #\a (char word 0) #\z)));…or lowerccase letter.
             do (map nil
-                    #'(lambda (p) (vector-push-extend word (gethash (decode-POS-letter p) *master-word-list*)))
+                    #'(lambda (p)
+                        (vector-push-extend word (gethash (decode-POS-letter p) *master-word-list*))
+                        (incf (aref *word-count-array* (POS-associate-number p) (letter-associate-number (char word 0)))))
                     codes)
                (incf read)
           finally
