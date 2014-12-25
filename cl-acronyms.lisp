@@ -71,6 +71,10 @@
 (defparameter *word-count-array* (make-array '(15 26) :element-type 'fixnum)
   "An array counting the number of words satisfying a given first letter and a given part of speech.")
 
+(defun get-dictionary-length (POS-letter start-letter)
+  "Returns how many words there are in the word."
+  (aref *word-count-array* (POS-associate-number POS-letter) (letter-associate-number start-letter)))
+
 (defun total-entries ()
   "Returns the total length the dictionary."
   (loop for i being the hash-values of *master-word-list*
