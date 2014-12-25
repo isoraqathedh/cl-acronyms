@@ -50,11 +50,16 @@
 
 (defun POS-associate-number (letter)
   "Turns the codes used by mobiposi.i into keywords corresponding to keys in the hash table."
-  (loop for i in '(#\N #\p #\h #\V #\t #\i #\A #\v #\C #\P #\! #\r #\D #\I #\o)
+  (loop for i-letter in '(#\N #\p #\h #\V #\t #\i #\A #\v #\C #\P #\! #\r #\D #\I #\o)
+        for i-key in '(:nouns :plurals :noun-phrases :verbs :transitive-verbs
+                       :intransitive-verbs :adjectives :adverbs :conjunctions :prepositions
+                       :interjections :pronouns :definite-articles :indef-articles :nominatives)
         for j from 0
-        when (char= letter i)
+        when (etypecase letter
+               (character (char= letter i-letter))
+               (keyword (eql letter i-key)))
           return j
-        finally (error "Not a recognized letter: ~@C" letter)))
+        finally (error "Not a recognized letter or keyform: ~s" letter)))
 
 (defun letter-associate-number (letter)
   "Turns A = 0, B = 1, ..., Z = 25"
