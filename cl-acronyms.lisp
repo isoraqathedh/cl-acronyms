@@ -191,27 +191,32 @@ returning nil if attempts run out (usually because there is no such combination)
               finally (return (append final-list
                                       (%get-POS-template target)))))))
 
+(defun letterp (thing)
+  (or (char<= #\a thing #\z) (char<= #\A thing #\Z)))
+
+(defun %expand (acronym)
+  "Main acronym expansion logic."
+  (with-output-to-string (out-string)
+    (loop for part-of-speech in (get-POS-template acronym)
+          with pointer = 0
+          for firstp = t then nil
+          for letter = (aref acronym pointer)
+          if (stringp part-of-speech)
+            do (format out-string "~:[ ~;~]~a"
+                       (or firstp (not (letterp (aref part-of-speech 0))))
+                       part-of-speech)
+          else
+            do (format out-string "~:[ ~;~]~a" firstp (random-word part-of-speech letter))
+               (incf pointer)
+          while (< pointer (length acronym)))))
+
 (defun expand (acronym &optional (times 1 times-supplied-p))
   "Expands an acronym. If 'times' is provided, repeats expansion that many times and collects results into a list."
-  (flet ((letterp (thing)
-           (or (char<= #\a thing #\z) (char<= #\A thing #\Z))))
-    ;; Remove all non-letter characters.
-    (setf acronym (delete-if-not #'letterp acronym))
-    (if times-supplied-p
-        (loop repeat times collect (expand acronym))
-        (with-output-to-string (out-string)
-          (loop for part-of-speech in (get-POS-template acronym)
-                with pointer = 0
-                for firstp = t then nil
-                for letter = (aref acronym pointer)
-                if (stringp part-of-speech)
-                  do (format out-string "~:[ ~;~]~a"
-                             (or firstp (not (letterp (aref part-of-speech 0))))
-                             part-of-speech)
-                else
-                  do (format out-string "~:[ ~;~]~a" firstp (random-word part-of-speech letter))
-                     (incf pointer)
-                while (< pointer (length acronym)))))))
+  ;; Remove all non-letter characters.
+  (setf acronym (delete-if-not #'letterp acronym))
+  (if times-supplied-p
+      (loop repeat times collect (%expand acronym))
+      (%expand acronym))))
   
 ;;; Autoload the list
 (refresh-list)
