@@ -216,7 +216,7 @@ returning nil if attempts run out (usually because there is no such combination)
   (setf acronym (delete-if-not #'letterp acronym))
   (if times-supplied-p
       (loop repeat times collect (%expand acronym))
-      (%expand acronym))))
+      (%expand acronym)))
   
 ;;; Autoload the list
 (refresh-list)
