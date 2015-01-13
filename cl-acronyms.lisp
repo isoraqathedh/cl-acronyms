@@ -173,23 +173,29 @@ returning nil if attempts run out (usually because there is no such combination)
 (defun get-POS-template (acronym)
   "Returns an appropriate part-of-speech template for a given acronym, ready for use in build-backronym."
   ;; MAYBE: Do common (and irregular) substitutions here, like 2 → to, 4 → for
-  (flet ((%get-POS-template (length)
-           (let ((templates-vector (aref *master-structures-list* (1- length))))
-             (aref templates-vector (random (length templates-vector))))))
-    (if (<= (length acronym) (length *master-structures-list*))
-        ;; Randomly pick a template to use.
-        (%get-POS-template (length acronym))
-        ;; If the acronym is too long for any precomposed templates,
-        ;; Join up existing templates with prepositions into a final template.
-        (loop with length-of-structures-list = (length *master-structures-list*)
-              with length-of-acronym         = (length acronym)
-              for i                          = (1+ (random length-of-structures-list))
-              and target                     = length-of-acronym then (- target i)
-              while (< length-of-structures-list target)
+  (if (find #\Space acronym)
+      (loop for i = 0 then (1+ j)
+            as j = (position #\Space acronym :start i)
+            append (get-POS-template (subseq acronym i j))
+            when j collect "and"
+            while j)
+      (flet ((%get-POS-template (length)
+               (let ((templates-vector (aref *master-structures-list* (1- length))))
+                 (aref templates-vector (random (length templates-vector))))))
+        (if (<= (length acronym) (length *master-structures-list*))
+            ;; Randomly pick a template to use.
+            (%get-POS-template (length acronym))
+            ;; If the acronym is too long for any precomposed templates,
+            ;; Join up existing templates with prepositions into a final template.
+            (loop with length-of-structures-list = (length *master-structures-list*)
+                  with length-of-acronym         = (length acronym)
+                  for i                          = (1+ (random length-of-structures-list))
+                  and target                     = length-of-acronym then (- target i)
+                  while (< length-of-structures-list target)
               append (%get-POS-template i) into final-list
-              collect (random-word :prepositions) into final-list
-              finally (return (append final-list
-                                      (%get-POS-template target)))))))
+                  collect (random-word :prepositions) into final-list
+                  finally (return (append final-list
+                                          (%get-POS-template target))))))))
 
 (defun letterp (thing)
   (or (char<= #\a thing #\z) (char<= #\A thing #\Z)))
@@ -213,7 +219,7 @@ returning nil if attempts run out (usually because there is no such combination)
 (defun expand (acronym &optional (times 1 times-supplied-p))
   "Expands an acronym. If 'times' is provided, repeats expansion that many times and collects results into a list."
   ;; Remove all non-letter characters.
-  (setf acronym (delete-if-not #'letterp acronym))
+  ;(setf acronym (delete-if-not #'letterp acronym))
   (if times-supplied-p
       (loop repeat times collect (%expand acronym))
       (%expand acronym)))
