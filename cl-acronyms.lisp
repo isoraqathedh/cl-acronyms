@@ -156,6 +156,47 @@ Skips any entries that have spaces."
     (#\I :indef-articles    )
     (#\o :nominatives       )))
 
+(defun generate-word (start-letter)
+  "Generates a (nonsensical) word that starts with the given letter."
+  ;; Should probably split this away into a separate package.
+  (let ((phonemes (loop with ht = (make-hash-table)
+                        for (i j) in '((:nasals "mn")
+                                       (:plosives "pbtdkgc")
+                                       (:fricatives "fvszh")
+                                       (:liquids "lr")
+                                       (:approximants "yw")
+                                       (:vowels "aeiou")
+                                       (:consonants "bcdfghjklmnpqrstvwxyz"))
+                        do (setf (gethash i ht) j)
+                        finally (return ht)))
+        (syllable-onsets #((:consonants)
+                           (:plosives :liquids)
+                           (:plosives :fricatives)
+                           (:fricatives :liquids)))
+        (syllable-nuclei #((:vowels)))
+        (syllable-codas #((:consonants)
+                          (:plosives :fricatives)
+                          ())))
+    (with-output-to-string (out)
+      (loop initially (princ start-letter out)
+            for onset = (aref syllable-onsets (random (length syllable-onsets)))
+            for nucleus = (aref syllable-nuclei (random (length syllable-nuclei)))
+            for coda = (aref syllable-codas (random (length syllable-codas)))
+            for next-syllable-p = t then (< 3 (random 7))
+            for first-syllable-p = t then nil
+            while next-syllable-p
+            when (and first-syllable-p
+                      (not (find start-letter (gethash :consonants phonemes))))
+              do (loop for i in onset
+                       do (princ (char (gethash i phonemes)
+                                       (random (length (gethash i phonemes)))) out))
+            do (loop for i in nucleus
+                     do (princ (char (gethash i phonemes)
+                                     (random (length (gethash i phonemes)))) out))
+               (loop for i in coda
+                     do (princ (char (gethash i phonemes)
+                                     (random (length (gethash i phonemes)))) out))))))
+
 (defun random-word (part-of-speech &optional letter)
   "Grabs a random word starting with the given part of speech starting with letter, if given.
 If part-of-speech is supplied as a word, then that word is used, discarding letter.
