@@ -201,15 +201,20 @@ Skips any entries that have spaces."
   "Grabs a random word starting with the given part of speech starting with letter, if given.
 If part-of-speech is supplied as a word, then that word is used, discarding letter.
 [This is so to facilitate build-acronym].
-If a letter is supplied, will make up to 12800 attempts to find a word that begins with that letter,
-returning nil if attempts run out (usually because there is no such combination)."
+If a letter is supplied, will only supply words that start with that letter;
+if no such word exists, then a nonce word is generated instead."
   (let ((pos-hash-table (gethash part-of-speech *master-word-list*)))
     (cond ((stringp part-of-speech) part-of-speech)
           ((member letter '(:any nil t)) (aref pos-hash-table (random (length pos-hash-table))))
-          (t (loop repeat 12800         ; failsafe
-                   for i = (aref pos-hash-table (random (length pos-hash-table)))
-                   when (char-equal letter (aref i 0))
-                     return (format nil "~@(~a~)" i))))))
+          (t (if (zerop (get-dictionary-length part-of-speech letter))
+                 (format nil "~@(~a~)" (generate-word letter))
+                 (loop with threshold = (random
+                                         (get-dictionary-length part-of-speech letter))
+                       for i across pos-hash-table
+                       when (char-equal letter (aref i 0))
+                         do (decf threshold)
+                       when (zerop threshold)
+                         return (format nil "~@(~a~)" i)))))))
 
 (defun get-POS-template (acronym)
   "Returns an appropriate part-of-speech template for a given acronym, ready for use in build-backronym."
