@@ -223,7 +223,7 @@ if no such word exists, then a nonce word is generated instead."
       (loop for i = 0 then (1+ j)
             as j = (position #\Space acronym :start i)
             append (get-POS-template (subseq acronym i j))
-            when j collect "and"
+            when j collect '("and")
             while j)
       (flet ((%get-POS-template (length)
                (let ((templates-vector (aref *master-structures-list* (1- length))))
@@ -253,13 +253,19 @@ if no such word exists, then a nonce word is generated instead."
           with pointer = 0
           for firstp = t then nil
           for letter = (aref acronym pointer)
-          if (stringp part-of-speech)
-            do (format out-string "~:[ ~;~]~a"
-                       (or firstp (not (letterp (aref part-of-speech 0))))
-                       part-of-speech)
-          else
-            do (format out-string "~:[ ~;~]~a" firstp (random-word part-of-speech letter))
-               (incf pointer)
+          do (typecase part-of-speech
+               (string (format out-string "~:[ ~;~]~a"
+                               (or firstp (not (letterp (aref part-of-speech 0))))
+                               part-of-speech))
+               (list
+                (format out-string "~:[ ~;~]~a"
+                        firstp
+                        (first part-of-speech))
+                (incf pointer))
+               (t
+                (format out-string "~:[ ~;~]~a"
+                        firstp (random-word part-of-speech letter))
+                (incf pointer)))
           while (< pointer (length acronym)))))
 
 (defun expand (acronym &optional (times 1 times-supplied-p))
