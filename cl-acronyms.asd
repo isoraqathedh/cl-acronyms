@@ -10,4 +10,5 @@
   :licence "MIT"
   :description "A program that expands an acronym based on grammatical rules."
   :serial t
-  :components ((:file "cl-acronyms")))
+  :components ((:file "cl-acronyms"))
+  :depends-on (:alexandria))
