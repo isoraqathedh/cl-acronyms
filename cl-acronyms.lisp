@@ -179,23 +179,20 @@ Skips any entries that have spaces."
                           ())))
     (with-output-to-string (out)
       (loop initially (princ start-letter out)
-            for onset = (aref syllable-onsets (random (length syllable-onsets)))
-            for nucleus = (aref syllable-nuclei (random (length syllable-nuclei)))
-            for coda = (aref syllable-codas (random (length syllable-codas)))
+            for onset = (alexandria:random-elt syllable-onsets)
+            for nucleus = (alexandria:random-elt syllable-nuclei)
+            for coda = (alexandria:random-elt syllable-codas)
             for next-syllable-p = t then (< 3 (random 7))
             for first-syllable-p = t then nil
             while next-syllable-p
             when (and first-syllable-p
                       (not (find start-letter (gethash :consonants phonemes))))
               do (loop for i in onset
-                       do (princ (char (gethash i phonemes)
-                                       (random (length (gethash i phonemes)))) out))
+                       do (princ (alexandria:random-elt (gethash i phonemes)) out))
             do (loop for i in nucleus
-                     do (princ (char (gethash i phonemes)
-                                     (random (length (gethash i phonemes)))) out))
+                     do (princ (alexandria:random-elt (gethash i phonemes)) out))
                (loop for i in coda
-                     do (princ (char (gethash i phonemes)
-                                     (random (length (gethash i phonemes)))) out))))))
+                     do (princ (alexandria:random-elt (gethash i phonemes)) out))))))
 
 (defun random-word (part-of-speech &optional letter)
   "Grabs a random word starting with the given part of speech starting with letter, if given.
@@ -205,7 +202,7 @@ If a letter is supplied, will only supply words that start with that letter;
 if no such word exists, then a nonce word is generated instead."
   (let ((pos-hash-table (gethash part-of-speech *master-word-list*)))
     (cond ((stringp part-of-speech) part-of-speech)
-          ((member letter '(:any nil t)) (aref pos-hash-table (random (length pos-hash-table))))
+          ((member letter '(:any nil t)) (alexandria:random-elt pos-hash-table))
           (t (if (zerop (get-dictionary-length part-of-speech letter))
                  (format nil "~@(~a~)" (generate-word letter))
                  (loop with threshold = (random
@@ -226,8 +223,7 @@ if no such word exists, then a nonce word is generated instead."
             when j collect '("and")
             while j)
       (flet ((%get-POS-template (length)
-               (let ((templates-vector (aref *master-structures-list* (1- length))))
-                 (aref templates-vector (random (length templates-vector))))))
+               (alexandria:random-elt (aref *master-structures-list* (1- length)))))
         (if (<= (length acronym) (length *master-structures-list*))
             ;; Randomly pick a template to use.
             (%get-POS-template (length acronym))
