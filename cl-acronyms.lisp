@@ -1,5 +1,6 @@
 (defpackage :info.isoraqathedh.cl-acronyms
-  (:use :cl)
+  (:use :cl :split-sequence)
+  (:import-from :alexandria :random-elt)
   (:nicknames #:cl-acronyms)
   (:export #:expand
            #:*word-list-file-location*
@@ -156,26 +157,68 @@ Skips any entries that have spaces."
     (#\I :indef-articles    )
     (#\o :nominatives       )))
 
+(defun generate-word (start-letter)
+  "Generates a (nonsensical) word that starts with the given letter."
+  ;; Should probably split this away into a separate package.
+  (let ((phonemes (loop with ht = (make-hash-table)
+                        for (i j) in '((:nasals "mn")
+                                       (:plosives "pbtdkgc")
+                                       (:fricatives "fvszh")
+                                       (:liquids "lr")
+                                       (:approximants "yw")
+                                       (:vowels "aeiou")
+                                       (:consonants "bcdfghjklmnpqrstvwxyz"))
+                        do (setf (gethash i ht) j)
+                        finally (return ht)))
+        (syllable-onsets #((:consonants)
+                           (:plosives :liquids)
+                           (:plosives :fricatives)
+                           (:fricatives :liquids)))
+        (syllable-nuclei #((:vowels)))
+        (syllable-codas #((:consonants)
+                          (:plosives :fricatives)
+                          ())))
+    (with-output-to-string (out)
+      (loop initially (princ start-letter out)
+            for onset = (random-elt syllable-onsets)
+            for nucleus = (random-elt syllable-nuclei)
+            for coda = (random-elt syllable-codas)
+            for next-syllable-p = t then (< 3 (random 7))
+            for first-syllable-p = t then nil
+            while next-syllable-p
+            when (and first-syllable-p
+                      (not (find start-letter (gethash :consonants phonemes))))
+              do (loop for i in onset
+                       do (princ (random-elt (gethash i phonemes)) out))
+            do (loop for i in nucleus
+                     do (princ (random-elt (gethash i phonemes)) out))
+               (loop for i in coda
+                     do (princ (random-elt (gethash i phonemes)) out))))))
+
 (defun random-word (part-of-speech &optional letter)
   "Grabs a random word starting with the given part of speech starting with letter, if given.
 If part-of-speech is supplied as a word, then that word is used, discarding letter.
 [This is so to facilitate build-acronym].
-If a letter is supplied, will make up to 12800 attempts to find a word that begins with that letter,
-returning nil if attempts run out (usually because there is no such combination)."
+If a letter is supplied, will only supply words that start with that letter;
+if no such word exists, then a nonce word is generated instead."
   (let ((pos-hash-table (gethash part-of-speech *master-word-list*)))
     (cond ((stringp part-of-speech) part-of-speech)
-          ((member letter '(:any nil t)) (aref pos-hash-table (random (length pos-hash-table))))
-          (t (loop repeat 12800         ; failsafe
-                   for i = (aref pos-hash-table (random (length pos-hash-table)))
-                   when (char-equal letter (aref i 0))
-                     return (format nil "~@(~a~)" i))))))
+          ((member letter '(:any nil t)) (random-elt pos-hash-table))
+          (t (if (zerop (get-dictionary-length part-of-speech letter))
+                 (format nil "~@(~a~)" (generate-word letter))
+                 (loop with threshold = (random
+                                         (get-dictionary-length part-of-speech letter))
+                       for i across pos-hash-table
+                       when (char-equal letter (aref i 0))
+                         do (decf threshold)
+                       when (zerop threshold)
+                         return (format nil "~@(~a~)" i)))))))
 
 (defun get-POS-template (acronym)
   "Returns an appropriate part-of-speech template for a given acronym, ready for use in build-backronym."
   ;; MAYBE: Do common (and irregular) substitutions here, like 2 → to, 4 → for
   (flet ((%get-POS-template (length)
-           (let ((templates-vector (aref *master-structures-list* (1- length))))
-             (aref templates-vector (random (length templates-vector))))))
+           (random-elt (aref *master-structures-list* (1- length)))))
     (if (<= (length acronym) (length *master-structures-list*))
         ;; Randomly pick a template to use.
         (%get-POS-template (length acronym))
@@ -201,22 +244,26 @@ returning nil if attempts run out (usually because there is no such combination)
           with pointer = 0
           for firstp = t then nil
           for letter = (aref acronym pointer)
-          if (stringp part-of-speech)
-            do (format out-string "~:[ ~;~]~a"
-                       (or firstp (not (letterp (aref part-of-speech 0))))
-                       part-of-speech)
-          else
-            do (format out-string "~:[ ~;~]~a" firstp (random-word part-of-speech letter))
-               (incf pointer)
+          do (typecase part-of-speech
+               (string (format out-string "~:[ ~;~]~a"
+                               (or firstp (not (letterp (aref part-of-speech 0))))
+                               part-of-speech))
+               (t
+                (format out-string "~:[ ~;~]~a"
+                        firstp (random-word part-of-speech letter))
+                (incf pointer)))
           while (< pointer (length acronym)))))
 
 (defun expand (acronym &optional (times 1 times-supplied-p))
   "Expands an acronym. If 'times' is provided, repeats expansion that many times and collects results into a list."
-  ;; Remove all non-letter characters.
-  (setf acronym (delete-if-not #'letterp acronym))
-  (if times-supplied-p
-      (loop repeat times collect (%expand acronym))
-      (%expand acronym)))
+  (cond (times-supplied-p ; Repeat takes the greatest prescedence
+         (loop repeat times collect (%expand acronym)))
+        ((every #'letterp acronym) ; Base case.
+         (%expand acronym))
+        ((every #'letterp (remove-if #'(lambda (p) (char-equal p #\Space)) acronym))
+         ; Contains separate words into spaces
+         (format nil "~{~a~^ and ~}"
+                 (mapcar #'%expand (split-sequence #\Space acronym :remove-empty-subseqs t))))))
   
 ;;; Autoload the list
 (refresh-list)
