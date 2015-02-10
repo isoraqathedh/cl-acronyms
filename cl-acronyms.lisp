@@ -1,5 +1,6 @@
 (defpackage :info.isoraqathedh.cl-acronyms
-  (:use :cl)
+  (:use :cl :split-sequence)
+  (:import-from :alexandria :random-elt)
   (:nicknames #:cl-acronyms)
   (:export #:expand
            #:*word-list-file-location*
@@ -179,20 +180,20 @@ Skips any entries that have spaces."
                           ())))
     (with-output-to-string (out)
       (loop initially (princ start-letter out)
-            for onset = (alexandria:random-elt syllable-onsets)
-            for nucleus = (alexandria:random-elt syllable-nuclei)
-            for coda = (alexandria:random-elt syllable-codas)
+            for onset = (random-elt syllable-onsets)
+            for nucleus = (random-elt syllable-nuclei)
+            for coda = (random-elt syllable-codas)
             for next-syllable-p = t then (< 3 (random 7))
             for first-syllable-p = t then nil
             while next-syllable-p
             when (and first-syllable-p
                       (not (find start-letter (gethash :consonants phonemes))))
               do (loop for i in onset
-                       do (princ (alexandria:random-elt (gethash i phonemes)) out))
+                       do (princ (random-elt (gethash i phonemes)) out))
             do (loop for i in nucleus
-                     do (princ (alexandria:random-elt (gethash i phonemes)) out))
+                     do (princ (random-elt (gethash i phonemes)) out))
                (loop for i in coda
-                     do (princ (alexandria:random-elt (gethash i phonemes)) out))))))
+                     do (princ (random-elt (gethash i phonemes)) out))))))
 
 (defun random-word (part-of-speech &optional letter)
   "Grabs a random word starting with the given part of speech starting with letter, if given.
@@ -202,7 +203,7 @@ If a letter is supplied, will only supply words that start with that letter;
 if no such word exists, then a nonce word is generated instead."
   (let ((pos-hash-table (gethash part-of-speech *master-word-list*)))
     (cond ((stringp part-of-speech) part-of-speech)
-          ((member letter '(:any nil t)) (alexandria:random-elt pos-hash-table))
+          ((member letter '(:any nil t)) (random-elt pos-hash-table))
           (t (if (zerop (get-dictionary-length part-of-speech letter))
                  (format nil "~@(~a~)" (generate-word letter))
                  (loop with threshold = (random

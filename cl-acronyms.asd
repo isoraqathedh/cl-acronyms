@@ -11,4 +11,4 @@
   :description "A program that expands an acronym based on grammatical rules."
   :serial t
   :components ((:file "cl-acronyms"))
-  :depends-on (:alexandria))
+  :depends-on (:alexandria :split-sequence))
