@@ -44,7 +44,7 @@ that may confuse a reader that might use it just for laughs.
 Interested parties can provide a less confusing list
 with a similar size.
 
-cl-acronyms does not otherwise depend on any other library.
+cl-acronyms also depends on alexandria and split-sequence in the current setup.
 
 ## Future
 
@@ -57,4 +57,3 @@ in no particular order:
   * A slightly smaller mobyposi.i that doesn't use quite so many archaic words
 * Greater control over how phrases are constructed:
   * Direct control over capitalization
-* Direct control over spacing
